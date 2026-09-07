@@ -21,7 +21,7 @@ const Login = () => {
       <div className="hidden lg:flex lg:w-1/2 bg-app-green relative items-center justify-center">
         <img
           src={heroSectionData.hero_image}
-          alt="heoroImage"
+          alt="heroImage"
           className="absolute inset-0 object-cover h-full bg-center opacity-10"
         />
         <div className="relative text-center px-12">
@@ -29,7 +29,7 @@ const Login = () => {
             Welcome back to Instacart
           </h2>
           <p className="text-white/60 font-serif text-xl max-w-sm mx-auto">
-            Fresh groceries and organic product, delivered to your doorstep.
+            Fresh groceries and organic products, delivered to your doorstep.
           </p>
         </div>
       </div>

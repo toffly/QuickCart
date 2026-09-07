@@ -15,7 +15,10 @@ const Newsletter = () => {
           discounts right to your inbox.
         </p>
 
-        <form className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+        <form
+          onSubmit={(e) => e.preventDefault()}
+          className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto"
+        >
           <input
             type="email"
             placeholder="Enter your email address"

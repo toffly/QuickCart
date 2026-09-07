@@ -6,7 +6,6 @@ import { ArrowRightIcon } from "lucide-react";
 import ProductCard from "../ProductCard";
 
 const PopularProducts = () => {
-    const currency = import.meta.env.VITE_CURRENCY || "$";
   const [products, setProducts] = useState<Product[]>([]);
 
   useEffect(() => {

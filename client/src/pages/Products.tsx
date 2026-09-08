@@ -44,7 +44,10 @@ const Products = () => {
     setSearchParams(newParams);
   };
 
-  const clearFilters = () => setSearchParams({});
+  const clearFilters = () => {
+    setSearchParams({});
+    setMobileFilterOpen(false)
+  };
 
   const activeCategory = categoriesData.find((c) => c.slug === category);
   const hasFilters =

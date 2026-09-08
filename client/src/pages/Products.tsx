@@ -5,6 +5,7 @@ import { categoriesData, dummyProducts } from "../assets/assets";
 import { ChevronDown, Home, SlidersHorizontal } from "lucide-react";
 import ProductCard from "../components/ProductCard";
 import Loading from "../components/Loading";
+import FilterPanel from "../components/FilterPanel";
 
 const Products = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -72,7 +73,16 @@ const Products = () => {
         <div className="flex gap-8 xl:gap-10">
           <aside className="hidden lg:block w-64 shrink-0">
             <div className="bg-white rounded-2xl p-4 sticky top-24">
-              <p>Filter</p>
+              <FilterPanel
+                categories={categoriesData}
+                category={category}
+                organic={organic}
+                minPrice={minPrice}
+                maxPrice={maxPrice}
+                updateFilter={updateFilter}
+                clearFilters={clearFilters}
+                hasFilters={hasFilters}
+              />
             </div>
           </aside>
 
@@ -112,7 +122,7 @@ const Products = () => {
             </div>
 
             {loading ? (
-              <Loading/>
+              <Loading />
             ) : products.length === 0 ? (
               <div className="text-center py-16">
                 <p className="text-lg font-semibold text-app-green mb-2">
@@ -146,7 +156,7 @@ const Products = () => {
                     key={i}
                     onClick={() => {
                       updateFilter("page", String(i + 1));
-                      scrollTo(0,0)
+                      scrollTo(0, 0);
                     }}
                     className={`size-9 rounded-lg text-sm font-medium transition-colors ${page === i + 1 ? "bg-ap-green text-white" : "bg-white text-app-text-light hover:bg-app-cream"}`}
                   >

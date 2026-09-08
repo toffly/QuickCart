@@ -29,7 +29,10 @@ const CartSidebar = () => {
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/40 z-50 transition-opacity" />
+      <div
+        onClick={() => setIsCartOpen(false)}
+        className="fixed inset-0 bg-black/40 z-50 transition-opacity"
+      />
 
       <div className="fixed right-0 top-0 h-full w-full max-w-md bg-white z-50 shadow-2xl flex flex-col animate-slide-in-right">
         <div className="flex items-center justify-between p-5 border-b border-app-border">

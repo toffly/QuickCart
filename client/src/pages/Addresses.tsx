@@ -4,6 +4,7 @@ import { dummyAddressData } from "../assets/assets";
 import { MapPinIcon, PlusIcon } from "lucide-react";
 import Loading from "../components/Loading";
 import AddressCard from "../components/AddressCard";
+import AddressForm from "../components/AddressForm";
 
 const Addresses = () => {
   const [addresses, setAddresses] = useState<Address[]>([]);
@@ -75,7 +76,15 @@ const Addresses = () => {
           </button>
         </div>
 
-        <form></form>
+        {showForm && (
+          <AddressForm
+            resetForm={resetForm}
+            handleSubmit={handleSubmit}
+            form={form}
+            setForm={setForm}
+            editingId={editingId}
+          />
+        )}
 
         {loading ? (
           <Loading />
@@ -92,7 +101,12 @@ const Addresses = () => {
         ) : (
           <div className="space-y-4">
             {addresses.map((addr) => (
-              <AddressCard key={addr._id} addr={addr} onEditHandler={onEditHandler} setAddresses={setAddresses}/>
+              <AddressCard
+                key={addr._id}
+                addr={addr}
+                onEditHandler={onEditHandler}
+                setAddresses={setAddresses}
+              />
             ))}
           </div>
         )}

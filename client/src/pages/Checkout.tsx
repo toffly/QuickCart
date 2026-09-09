@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import CheckoutAddress from "../components/Checkout/CheckoutAddress";
 import CheckoutPayment from "../components/Checkout/CheckoutPayment";
+import CheckoutReview from "../components/Checkout/CheckoutReview";
 
 const Checkout = () => {
   const currency = import.meta.env.VITE_CURRENCY || "$";
@@ -37,7 +38,7 @@ const Checkout = () => {
   const [paymentMethod, setPaymentMethod] = useState("card");
 
   const deliveryFee = cartTotal > 20 ? 0 : 1.99;
-  const tax = cartTotal * 0.88;
+  const tax = cartTotal * 0.08;
   const total = cartTotal + deliveryFee + tax;
 
   const steps: { key: string; label: string; icon: typeof MapPinIcon }[] = [
@@ -151,7 +152,7 @@ const Checkout = () => {
               />
             )}
             {step === "review" && (
-              <CheckoutAddress
+              <CheckoutReview
                 address={address}
                 items={items}
                 handlePlaceOrder={handlePlaceOrder}
@@ -159,6 +160,50 @@ const Checkout = () => {
                 total={total}
               />
             )}
+          </div>
+
+          <div className="bg-white rounded-2xl p-5 h-fit sticky top-24">
+            <h3 className="text-sm font-semibold text-app-green mb-4">
+              Order Summary
+            </h3>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-app-text-light">
+                  Subtotal ({items.length} items)
+                </span>
+                <span>
+                  {currency}
+                  {cartTotal.toFixed(2)}
+                </span>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="text-app-text-light">Delivery</span>
+                <span>
+                  {deliveryFee === 0 ? (
+                    <span className="text-app-success">Free</span>
+                  ) : (
+                    `${currency}${deliveryFee.toFixed(2)}`
+                  )}
+                </span>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="text-app-text-light">Tax</span>
+                <span>
+                  {currency}
+                  {tax.toFixed(2)}
+                </span>
+              </div>
+
+              <div className="flex justify-between pt-3 border-t border-app-border text-base font-semibold">
+                <span>Total</span>
+                <span className="text-app-green">
+                  {currency}
+                  {total.toFixed(2)}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>

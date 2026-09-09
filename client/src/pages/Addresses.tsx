@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import type { Address } from "../types";
 import { dummyAddressData } from "../assets/assets";
-import { PlusIcon } from "lucide-react";
+import { MapPinIcon, PlusIcon } from "lucide-react";
+import Loading from "../components/Loading";
+import AddressCard from "../components/AddressCard";
 
 const Addresses = () => {
-  const [Addresses, setAddresses] = useState<Address[]>([]);
+  const [addresses, setAddresses] = useState<Address[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -72,6 +74,28 @@ const Addresses = () => {
             <PlusIcon className="size-4" /> Add Address
           </button>
         </div>
+
+        <form></form>
+
+        {loading ? (
+          <Loading />
+        ) : addresses.length === 0 ? (
+          <div className="text-center py-16">
+            <MapPinIcon className="size-16 text-app-border mx-auto mb-4" />
+            <h2 className="text-lg font-semibold text-app-green mb-2">
+              No addresses saved
+            </h2>
+            <p className="text-sm text-app-text-light">
+              Add an address for faster checkout
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {addresses.map((addr) => (
+              <AddressCard key={addr._id} addr={addr} onEditHandler={onEditHandler} setAddresses={setAddresses}/>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -97,7 +97,7 @@ const Checkout = () => {
           </p>
           <button
             onClick={() => navigate("/products")}
-            className="px-5 py-2.5 bg-app-green text-white text-sm font-medium rounded-xl hover:bg-app-green-light transition-colorsF"
+            className="px-5 py-2.5 bg-app-green text-white text-sm font-medium rounded-xl hover:bg-app-green-light transition-colors"
           >
             Browse Products
           </button>
@@ -116,7 +116,7 @@ const Checkout = () => {
           <ArrowLeft className="size-4" /> Back
         </button>
 
-        <h1 className="tetx-2xl font-semibold text-app-green mb-8">Checkout</h1>
+        <h1 className="text-2xl font-semibold text-app-green mb-8">Checkout</h1>
 
         <div className="flex items-center gap-2 mb-8">
           {steps.map((s, i) => (

@@ -3,7 +3,13 @@ import { useCart } from "../context/CartContext";
 import { useEffect, useState } from "react";
 import { dummyAddressData } from "../assets/assets";
 import type { Address } from "../types";
-import { CheckIcon, CreditCardIcon, MapPinIcon } from "lucide-react";
+import {
+  ArrowLeft,
+  CheckIcon,
+  ChevronRightIcon,
+  CreditCardIcon,
+  MapPinIcon,
+} from "lucide-react";
 
 const Checkout = () => {
   const currency = import.meta.env.VITE_CURRENCY || "$";
@@ -97,7 +103,36 @@ const Checkout = () => {
     );
   }
 
-  return <div>Checkout</div>;
+  return (
+    <div className="min-h-screen bg-app-cream">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 text-sm text-app-text-light hover:text-app-green mb-6 transition-colors"
+        >
+          <ArrowLeft className="size-4" /> Back
+        </button>
+
+        <h1 className="tetx-2xl font-semibold text-app-green mb-8">Checkout</h1>
+
+        <div className="flex items-center gap-2 mb-8">
+          {steps.map((s, i) => (
+            <div key={s.key} className="flex items-center gap-2">
+              <button
+                onClick={() => setStep(s.key)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors ${step === s.key ? "bg-app-green text-white" : "bg-white text-app-green-light"} `}
+              >
+                <s.icon className="size-4" /> {s.label}
+                {i < steps.length - 1 && (
+                  <ChevronRightIcon className="size-4 text-app-text-light" />
+                )}
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default Checkout;

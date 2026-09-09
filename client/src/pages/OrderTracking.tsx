@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import type { Order } from "../types";
 import { dummyDashboardOrdersData } from "../assets/assets";
 import Loading from "../components/Loading";
-import { ArrowLeftIcon, PhoneIcon } from "lucide-react";
+import { ArrowLeftIcon, MapPinIcon, PhoneIcon } from "lucide-react";
 import OrderOTP from "../components/OrderTracking/OrderOTP";
 import LiveMap from "../components/OrderTracking/LiveMap";
 import OrderTimeLine from "../components/OrderTracking/OrderTimeLine";
@@ -47,7 +47,7 @@ const OrderTracking = () => {
               Order #{order!._id.slice(-8).toUpperCase()}
             </h1>
             <p className="text-sm text-app-text-light mt-1">
-              Place on{" "}
+              Placed on{" "}
               {new Date(order!.createdAt).toLocaleDateString("en-US", {
                 month: "long",
                 day: "numeric",
@@ -86,11 +86,31 @@ const OrderTracking = () => {
                       </p>
                     </div>
                   </div>
-                  <a href="" className="p-2.5 bg-app-cream rounded-xl hover:bg-app-cream-dark transition-colors">
-                    <PhoneIcon className="size-4 text-app-green"/>
+                  <a
+                    href={`tel:${order.deliveryPartner.phone}`}
+                    className="p-2.5 bg-app-cream rounded-xl hover:bg-app-cream-dark transition-colors"
+                  >
+                    <PhoneIcon className="size-4 text-app-green" />
                   </a>
                 </div>
               )}
+          </div>
+
+          <div className="space-y-5">
+            <div className="bg-white rounded-2xl p-5">
+              <h3 className="text-sm font-semibold text-app-green mb-3 flex items-center gap-2">
+                <MapPinIcon className="size-4" />
+                Delivery Address
+              </h3>
+              <p className="text-sm text-app-text-light leading-relaxed">
+                {order?.shippingAddress.label}
+                <br />
+                {order?.shippingAddress.address}
+                <br />
+                {order.shippingAddress.city}, {order.shippingAddress.state}{" "}
+                {order.shippingAddress.zip}
+              </p>
+            </div>
           </div>
         </div>
       </div>

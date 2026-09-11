@@ -27,7 +27,7 @@ export const getProducts = async (req: Request, res: Response) => {
 
   const where: any = {};
   if (category && category !== "all") where.category = category as string;
-  if (search) where.name = { container: search as string, mode: "insensitive" };
+  if (search) where.name = { contains: search as string, mode: "insensitive" };
   if (minPrice || maxPrice) {
     where.price = {};
     if (minPrice) where.price.gte = Number(minPrice);
@@ -77,14 +77,14 @@ export const getProduct = async (req: Request, res: Response) => {
 
 // POST
 // /api/products
-export const createProducts = async (req: Request, res: Response) => {
+export const createProduct = async (req: Request, res: Response) => {
   const product = await prisma.product.create({ data: req.body });
   res.status(201).json({ product });
 };
 
 // PUT
 // /api/products/:id
-export const updateProducts = async (req: Request, res: Response) => {
+export const updateProduct = async (req: Request, res: Response) => {
   const product = await prisma.product.update({
     where: { id: req.params.id as string },
     data: req.body,
@@ -94,7 +94,7 @@ export const updateProducts = async (req: Request, res: Response) => {
 
 // DELETE
 // /api/products/:id
-export const deleteProducts = async (req: Request, res: Response) => {
+export const deleteProduct = async (req: Request, res: Response) => {
   await prisma.product.delete({
     where: { id: req.params.id as string }
   });

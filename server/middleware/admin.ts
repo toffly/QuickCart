@@ -15,8 +15,8 @@ const admin = async (req: Request, res: Response, next: NextFunction) => {
     const adminEmails = process.env.ADMIN_EMAILS ? process.env.ADMIN_EMAILS.split(",").map((e)=> e.trim().toLowerCase()) : []
 
     if(adminEmails.includes(user.email.toLowerCase())) {
-        if(req.user) return req.user.isAdmin = true
-        next()
+        if(req.user) req.user.isAdmin = true
+        return next()
     } else {
         res.status(403).json({message: "Admin access required"})
     }

@@ -3,83 +3,118 @@
 import { Request, Response } from "express";
 import { prisma } from "../config/prisma.js";
 
+class StockReservationError extends Error {}
+
+const MAX_STATUS_UPDATE_ATTEMPTS = 5;
+
 // /api/orders
 export const createOrder = async (req: Request, res: Response) => {
   const { items, shippingAddress, paymentMethod } = req.body;
 
-  if (!items || items.length === 0) {
+  if (!Array.isArray(items) || items.length === 0) {
     return res.status(400).json({ message: "No order items" });
   }
 
-  const productIds = items.map((i: any) => i.product);
-  const products = await prisma.product.findMany({
-    where: { id: { in: productIds } },
-  });
-  const productMap: Record<string, (typeof products)[0]> = {};
-
-  products.forEach((p: any) => (productMap[p.id] = p));
-
+  const quantitiesByProduct = new Map<string, number>();
   for (const item of items) {
-    const product = productMap[item.product];
-    if (!product || (product.stock ?? 0) < item.quantity) {
-      return res.status(404).json({ message: "Product out of stock" });
+    if (
+      typeof item?.product !== "string" ||
+      item.product.trim().length === 0
+    ) {
+      return res.status(400).json({ message: "Invalid product" });
     }
+
+    if (!Number.isSafeInteger(item.quantity) || item.quantity <= 0) {
+      return res
+        .status(400)
+        .json({ message: "Item quantity must be a positive integer" });
+    }
+
+    const productId = item.product.trim();
+    const quantity = (quantitiesByProduct.get(productId) ?? 0) + item.quantity;
+    if (!Number.isSafeInteger(quantity)) {
+      return res
+        .status(400)
+        .json({ message: "Item quantity must be a positive integer" });
+    }
+    quantitiesByProduct.set(productId, quantity);
   }
 
-  const orderItems = items.map((item: any) => {
-    const dbProduct = productMap[item.product];
-    if (!dbProduct) throw new Error(`Product ${item.product} not found`);
-    return {
-      product: dbProduct.id,
-      name: dbProduct.name,
-      image: dbProduct.image,
-      price: dbProduct.price,
-      quantity: item.quantity,
-      unit: dbProduct.unit,
-    };
-  });
+  const aggregatedItems = [...quantitiesByProduct.entries()]
+    .map(([product, quantity]) => ({ product, quantity }))
+    .sort((a, b) => a.product.localeCompare(b.product));
 
-  const subtotal = orderItems.reduce(
-    (sum: number, item: any) => sum + item.price * item.quantity,
-    0,
-  );
-  const deliveryFee = subtotal > 20 ? 0 : 1.99;
-  const tax = Math.round(subtotal * 0.08 * 100) / 100;
-  const total = Math.round((subtotal + deliveryFee + tax) * 100) / 100;
+  let order;
+  try {
+    order = await prisma.$transaction(async (transaction) => {
+      const products = await transaction.product.findMany({
+        where: { id: { in: aggregatedItems.map((item) => item.product) } },
+      });
+      const productMap = new Map(products.map((product) => [product.id, product]));
 
-  const order = await prisma.order.create({
-    data: {
-      userId: req.user!.id,
-      items: orderItems,
-      shippingAddress,
-      paymentMethod,
-      subtotal,
-      deliveryFee,
-      tax,
-      total,
-      statusHistory: [
-        {
-          status: "Placed",
-          note: "Order placed successfully",
-          timestamp: new Date(),
+      const orderItems = aggregatedItems.map((item) => {
+        const dbProduct = productMap.get(item.product);
+        if (!dbProduct) throw new StockReservationError();
+
+        return {
+          product: dbProduct.id,
+          name: dbProduct.name,
+          image: dbProduct.image,
+          price: dbProduct.price,
+          quantity: item.quantity,
+          unit: dbProduct.unit,
+        };
+      });
+
+      const subtotal = orderItems.reduce(
+        (sum, item) => sum + item.price * item.quantity,
+        0,
+      );
+      const deliveryFee = subtotal > 20 ? 0 : 1.99;
+      const tax = Math.round(subtotal * 0.08 * 100) / 100;
+      const total = Math.round((subtotal + deliveryFee + tax) * 100) / 100;
+
+      for (const item of aggregatedItems) {
+        const reservation = await transaction.product.updateMany({
+          where: { id: item.product, stock: { gte: item.quantity } },
+          data: { stock: { decrement: item.quantity } },
+        });
+
+        if (reservation.count !== 1) throw new StockReservationError();
+      }
+
+      return transaction.order.create({
+        data: {
+          userId: req.user!.id,
+          items: orderItems,
+          shippingAddress,
+          paymentMethod,
+          subtotal,
+          deliveryFee,
+          tax,
+          total,
+          statusHistory: [
+            {
+              status: "Placed",
+              note: "Order placed successfully",
+              timestamp: new Date(),
+            },
+          ],
         },
-      ],
-    },
-  });
+      });
+    });
+  } catch (error) {
+    if (error instanceof StockReservationError) {
+      return res.status(404).json({ message: "Product out of stock" });
+    }
+    throw error;
+  }
 
   if (paymentMethod === "cart") {
     //stripe payment link
   }
 
   res.json({ order });
-
-  //Decrease stock
-  for (const item of orderItems) {
-    await prisma.product.update({
-      where: { id: item.product },
-      data: { stock: { decrement: item.quantity } },
-    });
-  }
 };
 
 // GET
@@ -131,31 +166,52 @@ export const getOrder = async (req: Request, res: Response) => {
 // /api/orders/:id
 export const updateOrderStatus = async (req: Request, res: Response) => {
   const { status, note } = req.body;
-  const order = await prisma.order.findUnique({
-    where: { id: req.params.id as string },
-  });
-
-  if (!order) {
-    return res.status(404).json({ message: "Order not found" });
+  if (typeof status !== "string" || status.trim().length === 0) {
+    return res.status(400).json({ message: "Status must be a non-empty string" });
   }
 
-  const history = (
-    Array.isArray(order.statusHistory) ? order.statusHistory : []
-  ) as any[];
-  history.push({
-    status,
-    note: note || `Order ${status.toLowerCase()}`,
+  const nextStatus = status.trim();
+  const historyEntry = {
+    status: nextStatus,
+    note: note || `Order ${nextStatus.toLowerCase()}`,
     timestamp: new Date(),
-  });
+  };
 
-  const updatedOrder = await prisma.order.update({
-    where: {
-      id: req.params.id as string,
-    },
-    data: { status, statusHistory: history },
-  });
+  for (let attempt = 0; attempt < MAX_STATUS_UPDATE_ATTEMPTS; attempt += 1) {
+    const order = await prisma.order.findUnique({
+      where: { id: req.params.id as string },
+    });
 
-  res.json({ order: updatedOrder });
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    const history = Array.isArray(order.statusHistory)
+      ? order.statusHistory
+      : [];
+    const update = await prisma.order.updateMany({
+      where: {
+        id: order.id,
+        updatedAt: order.updatedAt,
+        statusHistory: { equals: history },
+      },
+      data: {
+        status: nextStatus,
+        statusHistory: [...history, historyEntry],
+      },
+    });
+
+    if (update.count === 1) {
+      const updatedOrder = await prisma.order.findUnique({
+        where: { id: order.id },
+      });
+      return res.json({ order: updatedOrder });
+    }
+  }
+
+  return res.status(409).json({
+    message: "Order status changed concurrently; please retry",
+  });
 };
 
 // GET

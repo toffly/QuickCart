@@ -81,3 +81,69 @@ export const createOrder = async (req: Request, res: Response) => {
     });
   }
 };
+
+// GET
+// /api/orders
+export const getUserOrders = async (req: Request, res: Response) => {
+  const {status} = req.query
+
+  const where: any ={
+    userId: req.user!.id,
+    Not: [{paymentMethod: "card", isPaid: false}]
+  }
+
+  if(status && status !== "all"){
+    where.status = status
+  }
+
+  const orders = await prisma.order.findMany({
+    where,
+    include: {deliveryPartner: {select: {name: true, phone: true}}},
+    orderBy: {createdAt: "desc"}
+  })
+
+  res.json({orders})
+}
+
+// GET
+// /api/orders/:id
+export const getOrder = async (req: Request, res: Response) => {
+  const order = await prisma.order.findFirst({
+    where: {
+      id: req.params.id as string,
+      userId: req.user!.id
+    },
+    include: {deliveryPartner: {select: {name: true, phone: true, avatar: true, vehicleType: true}}}
+  })
+
+  if(!order){
+    return res.status(404).json({message: "Order not found"})
+  }
+
+  res.json({order})
+}
+
+// PUT
+// /api/orders/:id
+export const updateOrderStatus = async (req: Request, res: Response) => {
+  const {status, note} = req.body
+  const order = await prisma.order.findUnique({
+    where:  {id:req.params.id as string}
+  })
+
+  if(!order){
+    return res.status(404).json({message: "Order not found"})
+  }
+
+  const history = (Array.isArray(order.statusHistory) ? order.statusHistory : []) as any[]
+  history.push({status, note: note || `Order ${status.toLowerCase()}`, timestamp: new Date()})
+
+  const updatedOrder = await prisma.order.update({
+    where: {
+      id: req.params.id as string
+    },
+    data: {status, statusHistory: history}
+  })
+
+  res.json({order: updatedOrder})
+}

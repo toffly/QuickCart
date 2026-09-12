@@ -6,7 +6,15 @@ import cloudinary from "../config/cloudinary.js";
 const uploadRouter = express.Router();
 
 const storage = multer.memoryStorage();
-const upload = multer({ storage });
+const upload = multer({
+  storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024,
+    files: 1,
+    fields: 10,
+    parts: 12,
+  },
+});
 
 uploadRouter.post("/", auth, upload.single("image"), async (req, res) => {
   try {

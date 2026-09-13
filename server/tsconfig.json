@@ -12,7 +12,7 @@
     },
     "include": [
         "./**/*.ts"
-    ],
+, "inngest/index.js"    ],
     "exclude": [
         "node_modules"
     ]

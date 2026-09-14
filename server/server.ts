@@ -6,8 +6,6 @@ import productRouter from "./routes/productRoutes.js";
 import uploadRouter from "./routes/uploadRoutes.js";
 import orderRouter from "./routes/orderRoutes.js";
 import { serve } from "inngest/express";
-// The Inngest module is JavaScript and does not currently provide TypeScript declarations.
-// @ts-expect-error -- consume the untyped Inngest module until declarations are added.
 import { inngest, functions } from "./inngest/index.js"
 
 const app = express();

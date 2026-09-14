@@ -46,6 +46,17 @@ export const getAdminStats = async (req: Request, res: Response) => {
 export const getDeliveryPartners = async (req: Request, res: Response) => {
   const partners = await prisma.deliveryPartner.findMany({
     orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      phone: true,
+      avatar: true,
+      vehicleType: true,
+      isActive: true,
+      createdAt: true,
+      updatedAt: true,
+    },
   });
   res.json({ partners });
 };
@@ -72,7 +83,9 @@ export const createDeliveryPartner = async (req: Request, res: Response) => {
     },
   });
 
-  res.status(201).json({ partner });
+  res.status(201).json({
+    partner,
+  });
 };
 
 // update delivery partner
@@ -84,14 +97,16 @@ export const updateDeliveryPartner = async (req: Request, res: Response) => {
   if (name) data.name = name;
   if (phone) data.phone = phone;
   if (vehicleType) data.vehicleType = vehicleType;
-  if (isActive) data.isActive = isActive;
+  if (typeof isActive === "boolean") data.isActive = isActive;
 
   try {
     const partner = await prisma.deliveryPartner.update({
       where: { id: req.params.id as string },
       data,
     });
-    res.json({ partner });
+    res.json({
+      partner,
+    });
   } catch (error) {
     res.status(404).json({ message: "Partner not found" });
   }
@@ -140,5 +155,5 @@ export const assignDeliveryPartner = async (req: Request, res: Response) => {
     },
   });
 
-  res.json({order})
+  res.json({ order });
 };

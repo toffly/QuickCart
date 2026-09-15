@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import type { Product } from "../types";
-import { dummyProducts } from "../assets/assets";
 import Loading from "../components/Loading";
 import {
   ArrowLeftIcon,
@@ -16,6 +15,8 @@ import {
 } from "lucide-react";
 import DummyReviewsSection from "../assets/DummyReviewsSection";
 import ProductCard from "../components/ProductCard";
+import api from "../config/api";
+import toast from "react-hot-toast";
 
 const ProductPage = () => {
   const currency = import.meta.env.VITE_CURRENCY || "$";
@@ -34,13 +35,25 @@ const ProductPage = () => {
       setLoading(true);
       setLocalQuantity(1);
       window.scrollTo(0, 0);
-      const product = dummyProducts.find((p) => p.id === id);
-      setProduct(product!);
-      setRelatedProducts(dummyProducts.filter((p) => p.id !== id));
-      setLoading(false);
+
+      api.get(`/products/${id}`).then(({ data }) => {
+        setProduct(data.product);
+        return api
+          .get(`/products?category=${data.product.category}`)
+          .then(({ data }) => {
+            setRelatedProducts(
+              data.products.filter((p: Product) => p.id !== id),
+            );
+          })
+          .catch((error: any) => {
+            toast.error(error?.response?.data?.message || error?.message);
+          })
+          .finally(() => {
+            setLoading(false);
+          });
+      });
     };
     fetchData();
-    setTimeout(() => setLoading(false), 1000);
   }, [id, navigate]);
 
   if (loading) return <Loading />;

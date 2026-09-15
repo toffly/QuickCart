@@ -6,6 +6,8 @@ import { ChevronDown, Home, SlidersHorizontal, XIcon } from "lucide-react";
 import ProductCard from "../components/ProductCard";
 import Loading from "../components/Loading";
 import FilterPanel from "../components/FilterPanel";
+import toast from "react-hot-toast";
+import api from "../config/api";
 
 const Products = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -23,12 +25,24 @@ const Products = () => {
 
   const fetchProducts = async () => {
     setLoading(true);
-    setProducts(
-      dummyProducts.filter(
-        (product) => product.category === category || category === "",
-      ),
-    );
-    setLoading(false);
+    try {
+      const params = new URLSearchParams();
+      if (category) params.set("category", category);
+      if (sort) params.set("sort", sort);
+      if (minPrice) params.set("minPrice", minPrice);
+      if (maxPrice) params.set("maxPrice", maxPrice);
+
+      params.set("page", String(page));
+      params.set("limit", "12");
+
+      const { data } = await api.get(`/products?${params.toString()}`);
+      setProducts(data.products);
+      setTotalPages(data.pages);
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || error?.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const updateFilter = (key: string, value: string) => {
@@ -46,7 +60,7 @@ const Products = () => {
 
   const clearFilters = () => {
     setSearchParams({});
-    setMobileFilterOpen(false)
+    setMobileFilterOpen(false);
   };
 
   const activeCategory = categoriesData.find((c) => c.slug === category);

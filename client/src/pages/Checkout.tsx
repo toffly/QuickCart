@@ -1,7 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useEffect, useState } from "react";
-import { dummyAddressData } from "../assets/assets";
 import type { Address } from "../types";
 import {
   ArrowLeft,
@@ -13,13 +12,17 @@ import {
 import CheckoutAddress from "../components/Checkout/CheckoutAddress";
 import CheckoutPayment from "../components/Checkout/CheckoutPayment";
 import CheckoutReview from "../components/Checkout/CheckoutReview";
+import api from "../config/api";
+import toast from "react-hot-toast";
+import { useAuth } from "../context/authContext";
 
 const Checkout = () => {
   const currency = import.meta.env.VITE_CURRENCY || "$";
   const navigate = useNavigate();
+  const { clearCart } = useCart();
 
   const { items, cartTotal } = useCart();
-  const { user } = { user: { addresses: dummyAddressData } };
+  const { user } = useAuth()
 
   const [step, setStep] = useState("address");
   const [loading, setLoading] = useState(false);
@@ -61,7 +64,32 @@ const Checkout = () => {
 
   const handlePlaceOrder = async () => {
     setLoading(true);
-    navigate("/order");
+    try {
+      const orderData = {
+        items: items.map((item) => ({
+          product: item.product.id,
+          quantity: item.quantity,
+        })),
+        shippingAddress: address,
+        paymentMethod,
+      };
+
+      const { data } = await api.post("/orders", orderData);
+      console.log(data);
+
+      if (data.url) {
+        window.location.href = data.url;
+        return;
+      }
+      clearCart();
+      toast.success("Order placed successfully");
+      navigate(`/order/${data.order.id}`);
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || error?.message || "Failed");
+    } finally {
+      setLoading(false);
+      scrollTo(0, 0);
+    }
   };
 
   useEffect(() => {
@@ -70,15 +98,15 @@ const Checkout = () => {
         const defaultAddr =
           user.addresses.find((a) => a.isDefault) || user.addresses[0];
         setAddress({
-          id: defaultAddr.id,
-          label: defaultAddr.label,
-          address: defaultAddr.address,
-          city: defaultAddr.city,
-          state: defaultAddr.state,
-          zip: defaultAddr.city,
+          id: defaultAddr?.id,
+          label: defaultAddr?.label,
+          address: defaultAddr?.address,
+          city: defaultAddr?.city,
+          state: defaultAddr?.state,
+          zip: defaultAddr?.city,
           isDefault: false,
-          lat: defaultAddr.lat,
-          lng: defaultAddr.lng,
+          lat: defaultAddr?.lat,
+          lng: defaultAddr?.lng,
         });
       }
       fetchData();

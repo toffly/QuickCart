@@ -36,7 +36,7 @@ const OrderTracking = () => {
 
     const fetchLocation = async () => {
       try {
-        const { data } = await api.get(`/orders/${id}/locatoin`);
+        const { data } = await api.get(`/orders/${id}/location`);
         if (
           data.liveLocation?.lat &&
           data.liveLocation?.lng &&

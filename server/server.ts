@@ -28,7 +28,7 @@ app.use('/api/upload', uploadRouter)
 app.use('/api/orders', orderRouter)
 app.use('/api/addresses', addressRouter)
 app.use('/api/admin', adminRotuer)
-app.use('/api/delivery', deliveryPartnerRouter)
+app.use('/api/delivery-partners', deliveryPartnerRouter)
 
 app.use("/api/inngest", serve({ client: inngest, functions }));
 

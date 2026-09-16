@@ -42,7 +42,10 @@ uploadRouter.post("/", auth, upload.single("image"), async (req, res) => {
     res.json({url: result.secure_url})
 
   } catch (error: any) {
-    res.status(500).json({message: error.message})
+    console.error("Cloudinary upload failed:", error);
+    res.status(502).json({
+      message: error?.message || "Image upload failed",
+    });
   }
 });
 

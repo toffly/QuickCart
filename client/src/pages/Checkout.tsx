@@ -102,7 +102,7 @@ const Checkout = () => {
           address: defaultAddr?.address,
           city: defaultAddr?.city,
           state: defaultAddr?.state,
-          zip: defaultAddr?.city,
+          zip: defaultAddr?.zip,
           isDefault: false,
           lat: defaultAddr?.lat,
           lng: defaultAddr?.lng,

@@ -78,16 +78,30 @@ export const getProduct = async (req: Request, res: Response) => {
 // POST
 // /api/products
 export const createProduct = async (req: Request, res: Response) => {
-  const product = await prisma.product.create({ data: req.body });
+  const { price, originalPrice, stock, ...productData } = req.body;
+  const product = await prisma.product.create({
+    data: {
+      ...productData,
+      price: Number(price),
+      originalPrice: originalPrice === "" ? 0 : Number(originalPrice),
+      stock: stock === "" ? 0 : Number(stock),
+    },
+  });
   res.status(201).json({ product });
 };
 
 // PUT
 // /api/products/:id
 export const updateProduct = async (req: Request, res: Response) => {
+  const { price, originalPrice, stock, ...productData } = req.body;
   const product = await prisma.product.update({
     where: { id: req.params.id as string },
-    data: req.body,
+    data: {
+      ...productData,
+      price: Number(price),
+      originalPrice: originalPrice === "" ? 0 : Number(originalPrice),
+      stock: stock === "" ? 0 : Number(stock),
+    },
   });
   res.json({ product });
 };
@@ -95,8 +109,9 @@ export const updateProduct = async (req: Request, res: Response) => {
 // DELETE
 // /api/products/:id
 export const deleteProduct = async (req: Request, res: Response) => {
-  await prisma.product.delete({
-    where: { id: req.params.id as string }
+  await prisma.product.update({
+    where: { id: req.params.id as string },
+    data: {stock: Number(0)}
   });
-  res.json({ message: "Deleted" });
+  res.json({ message: "Product updated" });
 };

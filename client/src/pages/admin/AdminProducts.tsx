@@ -14,12 +14,12 @@ export default function AdminProducts() {
 
   const fetchProducts = async () => {
     try {
-        const {data} = await api.get('/products')
-        setProducts(data.products)
-    } catch (error:any) {
-        toast.error(error?.response?.data?.message || error?.message || "Failed");
+      const { data } = await api.get("/products");
+      setProducts(data.products);
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || error?.message || "Failed");
     } finally {
-        setLoading(false)
+      setLoading(false);
     }
   };
 
@@ -37,6 +37,17 @@ export default function AdminProducts() {
       )
     )
       return;
+    try {
+      await api.delete(`/products/${id}`);
+      toast.success("Product marked as out of stock");
+      fetchProducts();
+    } catch (error: any) {
+      toast.error(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Failed to update product",
+      );
+    }
     console.log(id);
   };
 

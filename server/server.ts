@@ -34,8 +34,9 @@ app.use("/api/inngest", serve({ client: inngest, functions }));
 
 //Error Handler
 app.use((error: any,req: Request, res: Response, next: NextFunction)=> {
-    console.error()
-    res.status(500).json({message: error})
+    console.error(error)
+    const message = error instanceof Error ? error.message : "Internal server error";
+    res.status(500).json({message})
 })
 
 app.listen(port, () => {

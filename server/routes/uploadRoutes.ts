@@ -18,6 +18,15 @@ const upload = multer({
 
 uploadRouter.post("/", auth, upload.single("image"), async (req, res) => {
   try {
+    if (!process.env.CLOUDINARY_URL &&
+        (!process.env.CLOUDINARY_CLOUD_NAME ||
+          !process.env.CLOUDINARY_API_KEY ||
+          !process.env.CLOUDINARY_API_SECRET)) {
+      return res.status(503).json({
+        message: "Cloudinary upload is not configured on the server",
+      });
+    }
+
     if (!req.file) {
       return res.status(400).json({ message: "No image file provided" });
     }

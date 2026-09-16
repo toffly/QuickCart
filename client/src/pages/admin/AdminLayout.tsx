@@ -15,6 +15,9 @@ export default function AdminLayout() {
         { to: "/", label: "Exit", icon: LogOutIcon },
     ]
 
+    if (loading) {
+        return <Loading />;
+    }
     if(!user?.isAdmin){
         return <Navigate to={'/'} replace/>
     }

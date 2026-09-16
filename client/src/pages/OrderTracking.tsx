@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import type { Order } from "../types";
-import { dummyDashboardOrdersData } from "../assets/assets";
 import Loading from "../components/Loading";
 import { ArrowLeftIcon, MapPinIcon, PhoneIcon } from "lucide-react";
 import OrderOTP from "../components/OrderTracking/OrderOTP";
 import LiveMap from "../components/OrderTracking/LiveMap";
 import OrderTimeLine from "../components/OrderTracking/OrderTimeLine";
+import api from "../config/api";
 
 const OrderTracking = () => {
   const currency = import.meta.env.VITE_CURRENCY || "$";
@@ -22,12 +22,42 @@ const OrderTracking = () => {
   } | null>(null);
 
   useEffect(() => {
-    const fetchData = async () => {
-      setOrder(dummyDashboardOrdersData.find((o) => o._id === id) as any);
-      setLoading(false);
-    };
-    fetchData();
+    api
+      .get(`/orders/${id}`)
+      .then((res) => setOrder(res.data.order))
+      .catch(() => navigate("/orders"))
+      .finally(() => setLoading(false));
   }, [id, navigate]);
+
+  // live location every 10 seconds
+  useEffect(() => {
+    if (!order || ["Delivered", "Cancelled", "Placed"].includes(order.status))
+      return;
+
+    const fetchLocation = async () => {
+      try {
+        const { data } = await api.get(`/orders/${id}/location`);
+        if (
+          data.liveLocation?.lat &&
+          data.liveLocation?.lng &&
+          data.liveLocation?.updatedAt
+        ) {
+          setLiveLocation({
+            lat: data.liveLocation.lat,
+            lng: data.liveLocation.lng,
+          });
+        }
+        // update order status if it changed
+        if (data.status && data.status !== order.status) {
+          setOrder((prev) => (prev ? { ...prev, status: data.status } : prev));
+        }
+      // eslint-disable-next-line no-empty
+      } catch {}
+    };
+    fetchLocation();
+    const interval = setInterval(fetchLocation, 10000);
+    return () => clearInterval(interval);
+  }, [id, order?.status]);
 
   if (loading) return <Loading />;
 
@@ -46,7 +76,7 @@ const OrderTracking = () => {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-2xl font-semibold text-app-green">
-              Order #{order!._id.slice(-8).toUpperCase()}
+              Order #{order!.id.slice(-8).toUpperCase()}
             </h1>
             <p className="text-sm text-app-text-light mt-1">
               Placed on{" "}
@@ -143,7 +173,6 @@ const OrderTracking = () => {
                 ))}
               </div>
               <div className="mt-4 pt-3 border-t border-app-border space-y-1.5 text-sm">
-
                 <div className="flex justify-between">
                   <span className="text-app-text-light">Subtotal</span>
                   <span>
@@ -155,7 +184,9 @@ const OrderTracking = () => {
                 <div className="flex justify-between">
                   <span className="text-app-text-light">Delivery</span>
                   <span>
-                    {order?.deliveryFee === 0 ? "Free" : `${currency}${order?.deliveryFee.toFixed(2)}`}
+                    {order?.deliveryFee === 0
+                      ? "Free"
+                      : `${currency}${order?.deliveryFee.toFixed(2)}`}
                   </span>
                 </div>
 
@@ -174,7 +205,6 @@ const OrderTracking = () => {
                     {order?.total.toFixed(2)}
                   </span>
                 </div>
-
               </div>
             </div>
           </div>

@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import type { Order } from "../types";
 import { Link, useSearchParams } from "react-router-dom";
 import { useCart } from "../context/CartContext";
-import { dummyDashboardOrdersData, statusColors } from "../assets/assets";
+import { statusColors } from "../assets/assets";
 import Loading from "../components/Loading";
 import { CalendarIcon, ChevronRightIcon, PackageIcon } from "lucide-react";
+import toast from "react-hot-toast";
+import api from "../config/api";
 
 const MyOrders = () => {
   const currency = import.meta.env.VITE_CURRENCY || "$";
@@ -18,9 +20,17 @@ const MyOrders = () => {
 
   const { clearCart } = useCart();
 
-  const fetchOrders = () => {
-    setOrders(dummyDashboardOrdersData as any);
-    setLoading(false);
+  const fetchOrders = async () => {
+    setLoading(true);
+    try {
+      const params = activeTab !== "all" ? `?status=${activeTab}` : "";
+      const { data } = await api.get(`/orders${params}`);
+      setOrders(data.orders);
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || error?.message || "Failed");
+    } finally{
+      setLoading(false)
+    }
   };
 
   useEffect(() => {
@@ -74,14 +84,14 @@ const MyOrders = () => {
           <div className="space-y-4">
             {orders.map((order) => (
               <Link
-                key={order._id}
-                to={`/orders/${order._id}`}
+                key={order.id}
+                to={`/orders/${order.id}`}
                 className="block max-w-4xl bg-white rounded-2xl p-5 hover:shadow transition-all"
               >
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <p className="text-sm font-medium text-app-green">
-                      Order # {order._id.slice(-8).toUpperCase()}
+                      Order # {order.id.slice(-8).toUpperCase()}
                     </p>
                     <div className="flex items-center gap-2 mt-1">
                       <CalendarIcon className="size-3 text-app-text-light" />

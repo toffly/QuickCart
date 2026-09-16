@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { heroSectionData } from "../assets/assets";
 import { Link } from "react-router-dom";
 import { BikeIcon, Loader2, LockIcon, MailIcon, UserIcon } from "lucide-react";
+import { useAuth } from "../context/authContext";
+import toast from "react-hot-toast";
 
 const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -10,10 +12,22 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const { login, register } = useAuth();
+
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => (window.location.href = "/"), 1000);
+    try {
+      if (isLogin) {
+        await login(email, password);
+      } else {
+        await register(name, email, password);
+      }
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || error?.message);
+    } finally {
+      setLoading(false)
+    }
   };
 
   return (
@@ -102,7 +116,11 @@ const Login = () => {
                 />
               </div>
             </label>
-            <button disabled={loading} type="submit" className="flex-center w-full py-3 bg-green-900 text-white font-semibold rounded-xl hover:bg-green-950 transition-colors disabled:opacity-50">
+            <button
+              disabled={loading}
+              type="submit"
+              className="flex-center w-full py-3 bg-green-900 text-white font-semibold rounded-xl hover:bg-green-950 transition-colors disabled:opacity-50"
+            >
               {loading ? (
                 <Loader2 className="animate-spin" />
               ) : isLogin ? (

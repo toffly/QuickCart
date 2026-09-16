@@ -2,9 +2,10 @@ import { Navigate, NavLink, Outlet } from "react-router-dom";
 import { PlusIcon, PackageSearchIcon, ShoppingBagIcon, LogOutIcon, BarChart3Icon, ShieldIcon, Truck } from "lucide-react";
 import Navbar from "../../components/Navbar";
 import { useAuth } from "../../context/authContext";
+import Loading from "../../components/Loading";
 
 export default function AdminLayout() {
-    const {user} = useAuth()
+    const {user, loading} = useAuth()
 
     const AdminLinkData = [
         { to: "/admin", label: "Dashboard", icon: BarChart3Icon },

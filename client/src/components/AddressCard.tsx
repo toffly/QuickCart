@@ -29,7 +29,7 @@ const AddressCard = ({
 
       updateUser({ addresses: data.addresses });
       toast.success("Address removed");
-    } catch (error: error) {
+    } catch (error: any) {
       toast.error(error?.response?.data?.message || error?.message);
     }
   };

@@ -8,6 +8,8 @@ import { useAuth } from "../context/authContext";
 import api from "../config/api";
 import toast from "react-hot-toast";
 
+const PLACEHOLDER_LOCATION = { lat: 0, lng: 0 };
+
 const Addresses = () => {
   const { updateUser } = useAuth();
 
@@ -78,7 +80,7 @@ const Addresses = () => {
     e.preventDefault();
 
     try {
-      const coords = await getLocation();
+      const coords = await getLocation().catch(() => PLACEHOLDER_LOCATION);
       const payload = { ...form, ...coords };
 
       if (editingId) {

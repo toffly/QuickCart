@@ -19,10 +19,9 @@ import { useAuth } from "../context/authContext";
 const Checkout = () => {
   const currency = import.meta.env.VITE_CURRENCY || "$";
   const navigate = useNavigate();
-  const { clearCart } = useCart();
 
-  const { items, cartTotal } = useCart();
-  const { user } = useAuth()
+  const { items, cartTotal, clearCart } = useCart();
+  const { user } = useAuth();
 
   const [step, setStep] = useState("address");
   const [loading, setLoading] = useState(false);
@@ -83,9 +82,9 @@ const Checkout = () => {
       }
       clearCart();
       toast.success("Order placed successfully");
-      navigate(`/order/${data.order.id}`);
+      navigate(`/orders/${data.order.id}`);
     } catch (error: any) {
-      toast.error(error?.response?.data?.message || error?.message || "Failed");
+      toast.error(error?.response?.data?.message || error?.message);
     } finally {
       setLoading(false);
       scrollTo(0, 0);
@@ -109,8 +108,8 @@ const Checkout = () => {
           lng: defaultAddr?.lng,
         });
       }
-      fetchData();
     };
+    fetchData();
   }, []);
 
   if (items.length === 0) {

@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import type { Order } from "../types";
-import { dummyDashboardOrdersData } from "../assets/assets";
 import Loading from "../components/Loading";
 import { ArrowLeftIcon, MapPinIcon, PhoneIcon } from "lucide-react";
 import OrderOTP from "../components/OrderTracking/OrderOTP";
 import LiveMap from "../components/OrderTracking/LiveMap";
 import OrderTimeLine from "../components/OrderTracking/OrderTimeLine";
+import api from "../config/api";
 
 const OrderTracking = () => {
   const currency = import.meta.env.VITE_CURRENCY || "$";
@@ -22,11 +22,11 @@ const OrderTracking = () => {
   } | null>(null);
 
   useEffect(() => {
-    const fetchData = async () => {
-      setOrder(dummyDashboardOrdersData.find((o) => o.id === id) as any);
-      setLoading(false);
-    };
-    fetchData();
+    api
+      .get(`/orders/${id}`)
+      .then((res) => setOrder(res.data.order))
+      .catch(() => navigate("/orders"))
+      .finally(() => setLoading(false));
   }, [id, navigate]);
 
   if (loading) return <Loading />;
@@ -143,7 +143,6 @@ const OrderTracking = () => {
                 ))}
               </div>
               <div className="mt-4 pt-3 border-t border-app-border space-y-1.5 text-sm">
-
                 <div className="flex justify-between">
                   <span className="text-app-text-light">Subtotal</span>
                   <span>
@@ -155,7 +154,9 @@ const OrderTracking = () => {
                 <div className="flex justify-between">
                   <span className="text-app-text-light">Delivery</span>
                   <span>
-                    {order?.deliveryFee === 0 ? "Free" : `${currency}${order?.deliveryFee.toFixed(2)}`}
+                    {order?.deliveryFee === 0
+                      ? "Free"
+                      : `${currency}${order?.deliveryFee.toFixed(2)}`}
                   </span>
                 </div>
 
@@ -174,7 +175,6 @@ const OrderTracking = () => {
                     {order?.total.toFixed(2)}
                   </span>
                 </div>
-
               </div>
             </div>
           </div>

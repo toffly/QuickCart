@@ -15,7 +15,13 @@ export default function DeliveryLayout() {
         navigate("/delivery/login");
         return;
       }
-      setPartner(JSON.parse(saved));
+      try {
+        setPartner(JSON.parse(saved));
+      } catch {
+        localStorage.removeItem("delivery_partner");
+        localStorage.removeItem("delivery_token");
+        navigate("/delivery/login");
+      }
     };
     fetchData();
   }, [navigate]);

@@ -9,7 +9,7 @@ import { serve } from "inngest/express";
 import { inngest, functions } from "./inngest/index.js"
 import addressRouter from "./routes/addressRoutes.js";
 import adminRotuer from "./routes/adminRoutes.js";
-import deliveryPartnerRouter from "./routes/deliveryRoutes.js";
+import deliveryRouter from "./routes/deliveryRoutes.js";
 
 const app = express();
 
@@ -28,14 +28,15 @@ app.use('/api/upload', uploadRouter)
 app.use('/api/orders', orderRouter)
 app.use('/api/addresses', addressRouter)
 app.use('/api/admin', adminRotuer)
-app.use('/api/delivery', deliveryPartnerRouter)
+app.use('/api/delivery', deliveryRouter)
 
 app.use("/api/inngest", serve({ client: inngest, functions }));
 
 //Error Handler
 app.use((error: any,req: Request, res: Response, next: NextFunction)=> {
-    console.error()
-    res.status(500).json({message: error})
+    console.error(error)
+    const message = error instanceof Error ? error.message : "Internal server error";
+    res.status(500).json({message})
 })
 
 app.listen(port, () => {

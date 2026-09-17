@@ -10,34 +10,34 @@ import {
 } from "../controller/deliveryController.js";
 import deliveryAuth from "../middleware/deliveryAuth.js";
 
-const deliveryPartnerRouter = express.Router();
+const deliveryRouter = express.Router();
 
-deliveryPartnerRouter.post("/login", loginPartner);
-deliveryPartnerRouter.get("/my-deliveries", deliveryAuth, getMyDeliveries);
-deliveryPartnerRouter.get(
+deliveryRouter.post("/login", loginPartner);
+deliveryRouter.get("/my-deliveries", deliveryAuth, getMyDeliveries);
+deliveryRouter.get(
   "/my-deliveries/:id",
   deliveryAuth,
   getDeliveryDetail,
 );
-deliveryPartnerRouter.put(
+deliveryRouter.put(
   "/my-deliveries/:id/complete",
   deliveryAuth,
   completeDelivery,
 );
-deliveryPartnerRouter.put(
+deliveryRouter.put(
   "/my-deliveries/:id/cancel",
   deliveryAuth,
   cancelDelivery,
 );
-deliveryPartnerRouter.put(
+deliveryRouter.put(
   "/my-deliveries/:id/status",
   deliveryAuth,
   updateDeliveryStatus,
 );
-deliveryPartnerRouter.put(
+deliveryRouter.put(
   "/my-deliveries/:id/location",
   deliveryAuth,
   updateLocation,
 );
 
-export default deliveryPartnerRouter;
+export default deliveryRouter;
